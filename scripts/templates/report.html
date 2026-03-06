@@ -91,12 +91,16 @@ body {
     border-radius: 6px;
     font-size: 13pt;
     font-weight: 700;
-    color: #fff;
+    color: var(--accent);
     margin-bottom: 6px;
     letter-spacing: 1px;
 }
 .rec-research { background: var(--primary); }
-.rec-positive { background: var(--accent-green); }
+.rec-positive {
+    background: #1f7a1f;
+    border: 1px solid #145214;
+    box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.15);
+}
 .rec-neutral { background: var(--accent-orange); }
 .rec-negative { background: var(--accent-red); }
 .rec-unknown { background: var(--text-light); }
@@ -499,6 +503,109 @@ body {
     border-top: 2px solid var(--accent);
     margin: 14px 0;
 }
+
+/* ===== 打印/PDF 分页控制：小节内不分页，避免内容截断 ===== */
+@media print {
+    /* 一/二/三/四大章节统一新起一页，减少章节中部截断 */
+    .section-business,
+    .section-culture,
+    .section-valuation,
+    .section-risk {
+        page-break-before: always !important;
+        break-before: page !important;
+    }
+
+    /* 新页起始时不再保留前置分割线，避免上一页底部出现孤立横线 */
+    .divider-before-business,
+    .divider-before-culture,
+    .divider-before-valuation,
+    .divider-before-risk {
+        display: none !important;
+    }
+
+    /*
+      分页策略：
+      1) 不强行让大容器（subsection/结论整块）完全不可断，避免临界高度时出现“硬切”。
+      2) 重点约束“标题不落单”和“表格行不拆分”，使分页更接近手动打印预览。
+    */
+    .subsection,
+    .section-risk-content,
+    .conclusion-card-inner {
+        page-break-inside: auto !important;
+        break-inside: auto !important;
+    }
+
+    /* 风险检查标题后紧跟内容，避免标题孤行 */
+    .section-risk .section-header {
+        page-break-after: avoid !important;
+        break-after: avoid !important;
+    }
+
+    /* 其他不可断块 */
+    .title-section,
+    .executive-summary,
+    .section-header,
+    .quote-box,
+    .highlight-box,
+    .score-line,
+    .metric-card,
+    .scenario-card,
+    .conclusion-card,
+    .duan-view,
+    .next-steps,
+    .policy-risks {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+
+    /* 小节标题不落单（至少带一个内容块） */
+    .subsection-title {
+        page-break-after: avoid !important;
+        break-after: avoid !important;
+    }
+    .subsection-title + .subsection-content,
+    .subsection-title + .data-table,
+    .subsection-title + .moat-table,
+    .subsection-title + .bullet-list,
+    .subsection-title + .scenarios {
+        page-break-before: avoid !important;
+        break-before: avoid !important;
+    }
+
+    /* 表格：有 thead 的每页重复表头；每行不从中断开 */
+    .data-table thead {
+        display: table-header-group;
+    }
+    .data-table tbody tr,
+    .moat-table tr,
+    .risk-table tr {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+    /* 标题后不断页：避免标题单独落在页底 */
+    .section-title,
+    .sub-label,
+    .conclusion-header,
+    .duan-view-title,
+    .next-steps-title,
+    .scenario-title,
+    .policy-risks-title {
+        page-break-after: avoid !important;
+        break-after: avoid !important;
+    }
+    /* 列表项不从中断开 */
+    .bullet-list li,
+    .conclusion-reasons li {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+    /* 分割线前后可断页 */
+    .divider,
+    .divider-gold {
+        page-break-after: auto;
+        margin: 12px 0;
+    }
+}
 </style>
 </head>
 <body class="{{ 'png-mode' if png_mode else '' }}">
@@ -560,10 +667,10 @@ body {
 </table>
 {% endif %}
 
-<hr class="divider">
+<hr class="divider divider-before-business">
 
 <!-- ===== 维度一：商业模式（Right Business） ===== -->
-<div class="section">
+<div class="section section-business">
     <div class="section-header">
         <div class="section-title-wrap">
             <div class="section-bar"></div>
@@ -670,10 +777,10 @@ body {
     {% endif %}
 </div>
 
-<hr class="divider">
+<hr class="divider divider-before-culture">
 
 <!-- ===== 维度二：企业文化（Right People） ===== -->
-<div class="section">
+<div class="section section-culture">
     <div class="section-header">
         <div class="section-title-wrap">
             <div class="section-bar"></div>
@@ -732,10 +839,10 @@ body {
     {% endif %}
 </div>
 
-<hr class="divider">
+<hr class="divider divider-before-valuation">
 
 <!-- ===== 维度三：估值（Right Price） ===== -->
-<div class="section">
+<div class="section section-valuation">
     <div class="section-header">
         <div class="section-title-wrap">
             <div class="section-bar"></div>
@@ -819,86 +926,89 @@ body {
     {% endif %}
 </div>
 
-<hr class="divider">
+<hr class="divider divider-before-risk">
 
 <!-- ===== 四、风险检查 ===== -->
-<div class="section">
+<div class="section section-risk">
     <div class="section-header">
         <div class="section-title-wrap">
             <div class="section-bar" style="background: var(--accent-orange);"></div>
             <div class="section-title">四、Stop Doing List 风险检查</div>
         </div>
     </div>
+    <div class="section-risk-content">
+        <table class="risk-table">
+            {% for check in risk_checks %}
+            <tr>
+                <td style="width: 30px;">
+                    {% if check.status == 'pass' %}
+                    <span class="status-dot status-pass">✓</span>
+                    {% elif check.status == 'warn' %}
+                    <span class="status-dot status-warn">!</span>
+                    {% else %}
+                    <span class="status-dot status-fail">✗</span>
+                    {% endif %}
+                </td>
+                <td class="risk-item" style="width: 160px;">{{ check.item }}</td>
+                <td class="risk-note">{{ check.note }}</td>
+            </tr>
+            {% endfor %}
+        </table>
 
-    <table class="risk-table">
-        {% for check in risk_checks %}
-        <tr>
-            <td style="width: 30px;">
-                {% if check.status == 'pass' %}
-                <span class="status-dot status-pass">✓</span>
-                {% elif check.status == 'warn' %}
-                <span class="status-dot status-warn">!</span>
-                {% else %}
-                <span class="status-dot status-fail">✗</span>
-                {% endif %}
-            </td>
-            <td class="risk-item" style="width: 160px;">{{ check.item }}</td>
-            <td class="risk-note">{{ check.note }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-
-    {% if policy_risks %}
-    <div class="policy-risks">
-        <div class="policy-risks-title">⚠️ 政策风险（额外关注）</div>
-        <ul>{% for r in policy_risks %}<li>{{ r }}</li>{% endfor %}</ul>
+        {% if policy_risks %}
+        <div class="policy-risks">
+            <div class="policy-risks-title">⚠️ 政策风险（额外关注）</div>
+            <ul>{% for r in policy_risks %}<li>{{ r }}</li>{% endfor %}</ul>
+        </div>
+        {% endif %}
     </div>
-    {% endif %}
 </div>
 
 <hr class="divider-gold">
 
 <!-- ===== 五、最终结论 ===== -->
 <div class="conclusion-card">
-    <div class="conclusion-header">
-        <div>
-            <span class="recommendation-badge {{ rec_class }}" style="font-size: 11pt; padding: 6px 14px;">{{ recommendation }}</span>
+    <div class="conclusion-card-inner">
+        <div class="conclusion-header">
+            <div>
+                <span class="recommendation-badge {{ rec_class }}" style="font-size: 11pt; padding: 6px 14px;">{{ recommendation }}</span>
+            </div>
+            <div class="overall-score" style="font-size: 13pt;">
+                综合 {{ '★' * (overall_score | int) }}{{ '☆' * (5 - overall_score | int) }} {{ overall_score }}/5
+            </div>
         </div>
-        <div class="overall-score" style="font-size: 13pt;">
-            综合 {{ '★' * (overall_score | int) }}{{ '☆' * (5 - overall_score | int) }} {{ overall_score }}/5
-        </div>
-    </div>
 
-    <div style="font-weight: 700; font-size: 10.5pt; color: var(--primary); margin-bottom: 6px;">核心理由</div>
-    <ol class="conclusion-reasons">
-        {% for reason in conclusion_reasons %}
-        <li>{{ reason }}</li>
-        {% endfor %}
-    </ol>
-
-    <!-- 段永平视角 -->
-    <div class="duan-view">
-        <div class="duan-view-title">段永平视角</div>
-        <div class="duan-view-content">{{ duan_view if duan_view else duan_buffett_view }}</div>
-    </div>
-
-    <!-- 巴菲特视角 -->
-    {% if buffett_view %}
-    <div class="duan-view" style="margin-top: 10px;">
-        <div class="duan-view-title">巴菲特可能会说</div>
-        <div class="duan-view-content">{{ buffett_view }}</div>
-    </div>
-    {% endif %}
-
-    <!-- 下一步建议 -->
-    {% if next_steps %}
-    <div class="next-steps">
-        <div class="next-steps-title">下一步建议</div>
-        <ol class="bullet-list" style="padding-left:20px;">
-            {% for step in next_steps %}<li>{{ step }}</li>{% endfor %}
+        <div style="font-weight: 700; font-size: 10.5pt; color: var(--primary); margin-bottom: 6px;">核心理由</div>
+        <ol class="conclusion-reasons">
+            {% for reason in conclusion_reasons %}
+            <li>{{ reason }}</li>
+            {% endfor %}
         </ol>
+
+        <!-- 段永平视角 -->
+        <div class="duan-view">
+            <div class="duan-view-title">段永平视角</div>
+            <div class="duan-view-content">{{ duan_view if duan_view else duan_buffett_view }}</div>
+        </div>
+
+        <!-- 巴菲特视角 -->
+        {% if buffett_view %}
+        <div class="duan-view" style="margin-top: 10px;">
+            <div class="duan-view-title">巴菲特可能会说</div>
+            <div class="duan-view-content">{{ buffett_view }}</div>
+        </div>
+        {% endif %}
+
+        <!-- 下一步建议 -->
+        {% if next_steps %}
+        <div class="next-steps">
+            <div class="next-steps-title">下一步建议</div>
+            <ol class="bullet-list" style="padding-left:20px;">
+                {% for step in next_steps %}<li>{{ step }}</li>{% endfor %}
+            </ol>
+        </div>
+        {% endif %}
     </div>
-    {% endif %}
 </div>
 
 <!-- ===== 补充说明 ===== -->
