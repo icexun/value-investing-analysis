@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>价值投资深度分析</title>
+<style>
+@font-face {
+    font-family: 'Noto Sans SC';
+    src: local('Noto Sans SC'), local('NotoSansSC-Regular'), local('Microsoft YaHei'), local('PingFang SC');
+    font-weight: 400;
+}
+@font-face {
+    font-family: 'Noto Sans SC';
+    src: local('Noto Sans SC Bold'), local('NotoSansSC-Bold'), local('Microsoft YaHei Bold'), local('PingFang SC Semibold');
+    font-weight: 700;
+}
+
+:root {
+    --primary-dark: #1a2332;
+    --primary: #2c4a7c;
+    --primary-light: #3d6098;
+    --accent: #c49b5c;
+    --accent-red: #cf1322;
+    --accent-green: #389e0d;
+    --accent-orange: #d48806;
+    --text-primary: #1a1a1a;
+    --text-secondary: #595959;
+    --text-light: #8c8c8c;
+    --bg-light: #f5f7fa;
+    --bg-card: #f0f4f8;
+    --border: #e0e0e0;
+}
+
+@page { size: A4; margin: 0; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Noto Sans SC', 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.7;
+    color: var(--text-primary);
+    background: #fff;
+}
+
+.pdf-body { padding: 0 18mm 15mm 18mm; }
+
+/* ===== 顶部封条 ===== */
+.header-bar {
+    background: var(--primary-dark);
+    color: #fff;
+    padding: 6px 18mm;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 8pt;
+    letter-spacing: 0.5px;
+}
+.header-bar .left { opacity: 0.85; }
+.header-bar .right { opacity: 0.6; font-size: 7pt; }
+
+/* ===== 公司标题区 ===== */
+.title-section {
+    margin-top: 18px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--accent);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+.company-name {
+    font-size: 22pt;
+    font-weight: 700;
+    color: var(--primary-dark);
+    line-height: 1.3;
+    margin-bottom: 4px;
+}
+.company-meta {
+    font-size: 10pt;
+    color: var(--text-secondary);
+    margin-bottom: 2px;
+}
+.title-right {
+    text-align: right;
+    flex-shrink: 0;
+    margin-left: 20px;
+}
+.recommendation-badge {
+    display: inline-block;
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-size: 13pt;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 6px;
+    letter-spacing: 1px;
+}
+.rec-research { background: var(--primary); }
+.rec-positive { background: var(--accent-green); }
+.rec-neutral { background: var(--accent-orange); }
+.rec-negative { background: var(--accent-red); }
+.rec-unknown { background: var(--text-light); }
+.overall-score {
+    font-size: 10pt;
+    color: var(--accent);
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+.report-date {
+    font-size: 8pt;
+    color: var(--text-light);
+    line-height: 1.6;
+}
+
+/* ===== 一句话判断 ===== */
+.executive-summary {
+    margin: 16px 0;
+    padding: 12px 16px;
+    background: var(--bg-card);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+    font-size: 11pt;
+    line-height: 1.8;
+    color: var(--text-primary);
+}
+
+/* ===== 指标仪表盘 ===== */
+.metrics-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 14px 0 18px 0;
+}
+.metric-card {
+    flex: 1 1 calc(25% - 8px);
+    min-width: 100px;
+    background: var(--bg-light);
+    border-radius: 6px;
+    padding: 10px 12px;
+    text-align: center;
+}
+.metric-label {
+    font-size: 8pt;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 4px;
+}
+.metric-value {
+    font-size: 16pt;
+    font-weight: 700;
+    color: var(--primary-dark);
+    line-height: 1.2;
+}
+.metric-value.positive { color: var(--accent-green); }
+.metric-value.negative { color: var(--accent-red); }
+.metric-value.neutral { color: var(--accent-orange); }
+.metric-unit {
+    font-size: 7.5pt;
+    color: var(--text-light);
+    margin-top: 2px;
+}
+
+/* ===== 维度分析通用 ===== */
+.section {
+    margin-bottom: 18px;
+}
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 6px;
+    margin-bottom: 12px;
+}
+.section-title-wrap {
+    display: flex;
+    align-items: center;
+}
+.section-bar {
+    width: 4px;
+    height: 22px;
+    background: var(--primary);
+    border-radius: 2px;
+    margin-right: 10px;
+    flex-shrink: 0;
+}
+.section-title {
+    font-size: 14pt;
+    font-weight: 700;
+    color: var(--primary-dark);
+}
+.section-score {
+    font-size: 11pt;
+    color: var(--accent);
+    font-weight: 700;
+    white-space: nowrap;
+}
+.subsection {
+    margin-bottom: 14px;
+}
+.subsection-title {
+    font-size: 11pt;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 6px;
+}
+.subsection-content {
+    font-size: 10pt;
+    line-height: 1.75;
+    color: var(--text-primary);
+    text-align: justify;
+}
+
+/* ===== 通用组件 ===== */
+.bullet-list {
+    margin: 8px 0;
+    padding-left: 18px;
+    font-size: 10pt;
+    line-height: 1.75;
+    color: var(--text-primary);
+}
+.bullet-list li {
+    margin-bottom: 3px;
+}
+.bullet-list li::marker {
+    color: var(--primary);
+}
+
+.highlight-box {
+    margin: 8px 0;
+    padding: 8px 14px;
+    background: linear-gradient(135deg, #f0f5ff 0%, #e8eef5 100%);
+    border-radius: 6px;
+    font-size: 10pt;
+    font-weight: 600;
+    color: var(--primary);
+    line-height: 1.6;
+}
+
+.sub-label {
+    font-size: 9.5pt;
+    font-weight: 700;
+    color: var(--primary-dark);
+    margin: 10px 0 4px 0;
+}
+
+.score-line {
+    margin-top: 10px;
+    padding: 8px 14px;
+    background: var(--bg-light);
+    border-radius: 6px;
+    font-size: 11pt;
+    font-weight: 700;
+    color: var(--primary-dark);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.score-line .stars {
+    color: var(--accent);
+}
+
+/* 引用框 */
+.quote-box {
+    margin: 10px 0;
+    padding: 10px 14px;
+    background: #f0f5ff;
+    border-left: 3px solid var(--accent);
+    border-radius: 0 4px 4px 0;
+}
+.quote-text {
+    font-size: 9.5pt;
+    font-style: italic;
+    color: var(--text-secondary);
+    line-height: 1.7;
+}
+.quote-author {
+    font-size: 8pt;
+    color: var(--text-light);
+    text-align: right;
+    margin-top: 4px;
+}
+
+/* ===== 数据表格 ===== */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 9.5pt;
+}
+.data-table thead th {
+    background: var(--primary-dark);
+    color: #fff;
+    padding: 8px 12px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 9pt;
+}
+.data-table tbody td {
+    padding: 7px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+}
+.data-table tbody tr:nth-child(even) { background: var(--bg-light); }
+
+/* ===== 护城河评级表 ===== */
+.moat-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 9.5pt;
+}
+.moat-table td {
+    padding: 6px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+}
+.moat-table tr:last-child td { border-bottom: none; }
+.moat-type {
+    font-weight: 700;
+    color: var(--primary-dark);
+    width: 100px;
+}
+.moat-stars {
+    color: var(--accent);
+    font-size: 11pt;
+    width: 120px;
+    letter-spacing: 1px;
+}
+.moat-note {
+    font-size: 9pt;
+    color: var(--text-secondary);
+}
+
+/* ===== 情景分析 ===== */
+.scenarios {
+    display: flex;
+    gap: 10px;
+    margin: 10px 0;
+}
+.scenario-card {
+    flex: 1;
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 9pt;
+    line-height: 1.6;
+}
+.scenario-card.optimistic {
+    background: #f6ffed;
+    border: 1px solid #b7eb8f;
+}
+.scenario-card.neutral {
+    background: #fff7e6;
+    border: 1px solid #ffd591;
+}
+.scenario-card.pessimistic {
+    background: #fff1f0;
+    border: 1px solid #ffa39e;
+}
+.scenario-title {
+    font-weight: 700;
+    font-size: 10pt;
+    margin-bottom: 6px;
+}
+.scenario-card.optimistic .scenario-title { color: var(--accent-green); }
+.scenario-card.neutral .scenario-title { color: var(--accent-orange); }
+.scenario-card.pessimistic .scenario-title { color: var(--accent-red); }
+.scenario-prob {
+    font-size: 8pt;
+    color: var(--text-light);
+    margin-bottom: 6px;
+}
+
+/* ===== 风险检查表 ===== */
+.risk-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 10px 0;
+    font-size: 9.5pt;
+}
+.risk-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    vertical-align: middle;
+}
+.risk-table tr:last-child td { border-bottom: none; }
+.status-dot {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 20px;
+    font-size: 10px;
+    color: #fff;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+.status-pass { background: var(--accent-green); }
+.status-warn { background: var(--accent-orange); }
+.status-fail { background: var(--accent-red); }
+.risk-item { font-weight: 600; color: var(--text-primary); }
+.risk-note { font-size: 9pt; color: var(--text-secondary); }
+
+.policy-risks {
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: #fff7e6;
+    border-left: 3px solid var(--accent-orange);
+    border-radius: 0 6px 6px 0;
+}
+.policy-risks-title {
+    font-size: 10pt;
+    font-weight: 700;
+    color: var(--accent-orange);
+    margin-bottom: 6px;
+}
+.policy-risks ul {
+    padding-left: 18px;
+    font-size: 9.5pt;
+    color: var(--text-secondary);
+}
+.policy-risks li { margin-bottom: 2px; }
+
+/* ===== 结论区 ===== */
+.conclusion-card {
+    background: var(--bg-light);
+    border-radius: 8px;
+    padding: 18px 20px;
+    margin: 16px 0;
+    border: 1px solid var(--border);
+}
+.conclusion-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+}
+.conclusion-reasons {
+    margin: 10px 0;
+    padding-left: 20px;
+}
+.conclusion-reasons li {
+    margin-bottom: 6px;
+    font-size: 10.5pt;
+    line-height: 1.6;
+}
+.conclusion-reasons li strong { color: var(--primary); }
+
+.duan-view {
+    margin-top: 14px;
+    padding: 12px 16px;
+    background: #fff;
+    border-left: 3px solid var(--accent);
+    border-radius: 0 6px 6px 0;
+}
+.duan-view-title {
+    font-size: 10pt;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 6px;
+}
+.duan-view-content {
+    font-size: 10pt;
+    line-height: 1.75;
+    color: var(--text-secondary);
+}
+
+.next-steps {
+    margin-top: 14px;
+    padding: 12px 16px;
+    background: #fff;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+}
+.next-steps-title {
+    font-size: 10pt;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 6px;
+}
+
+/* ===== PNG模式 ===== */
+.png-mode .header-bar { margin: 0; padding: 10px 24px; }
+.png-mode { width: 1200px; padding: 0; }
+.png-mode .content-wrap { padding: 20px 28px 30px 28px; }
+
+/* ===== 分割线 ===== */
+.divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 16px 0;
+}
+.divider-gold {
+    border: none;
+    border-top: 2px solid var(--accent);
+    margin: 14px 0;
+}
+</style>
+</head>
+<body class="{{ 'png-mode' if png_mode else '' }}">
+
+{% if png_mode %}
+<div class="content-wrap">
+<div class="header-bar">
+    <span class="left">价值投资深度分析 · 段永平 & 巴菲特体系</span>
+    <span class="right">Strictly Private & Confidential</span>
+</div>
+<div style="padding: 20px 28px 30px 28px;">
+{% else %}
+<div class="header-bar">
+    <span class="left">价值投资深度分析 · 段永平 & 巴菲特体系</span>
+    <span class="right">Strictly Private & Confidential</span>
+</div>
+<div class="pdf-body">
+{% endif %}
+
+<!-- ===== 公司标题区 ===== -->
+<div class="title-section">
+    <div class="title-left">
+        <div class="company-name">{{ company_name }}</div>
+        <div class="company-meta">{{ ticker }} · {{ exchange }} · {{ industry }}</div>
+    </div>
+    <div class="title-right">
+        <div class="recommendation-badge {{ rec_class }}">{{ recommendation }}</div>
+        <div class="overall-score">{{ '★' * (overall_score | int) }}{{ '☆' * (5 - overall_score | int) }} {{ overall_score }}/5</div>
+        <div class="report-date">
+            分析日期：{{ date }}<br>
+            段永平 + 巴菲特价值投资体系
+        </div>
+    </div>
+</div>
+
+<!-- ===== 一句话判断 ===== -->
+<div class="executive-summary">{{ executive_summary }}</div>
+
+<!-- ===== 关键指标仪表盘 ===== -->
+<div class="metrics-grid">
+    {% for m in metrics_list %}
+    <div class="metric-card">
+        <div class="metric-label">{{ m.label }}</div>
+        <div class="metric-value {{ m.color_class }}">{{ m.value }}</div>
+        {% if m.unit %}<div class="metric-unit">{{ m.unit }}</div>{% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+<!-- ===== 详细财务数据表 ===== -->
+{% if financial_table %}
+<table class="data-table">
+    <thead><tr><th>指标</th><th>数值</th><th>说明</th></tr></thead>
+    <tbody>
+    {% for row in financial_table %}
+        <tr><td style="font-weight:600;width:140px;">{{ row.label }}</td><td style="width:180px;">{{ row.value }}</td><td style="color:var(--text-secondary);">{{ row.note }}</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+<hr class="divider">
+
+<!-- ===== 维度一：商业模式（Right Business） ===== -->
+<div class="section">
+    <div class="section-header">
+        <div class="section-title-wrap">
+            <div class="section-bar"></div>
+            <div class="section-title">一、商业模式分析（Right Business）</div>
+        </div>
+        <div class="section-score">{{ '★' * business_model.score }}{{ '☆' * (5 - business_model.score) }} {{ business_model.score }}/5</div>
+    </div>
+
+    <!-- 1.1 生意模式 -->
+    <div class="subsection">
+        <div class="subsection-title">1.1 生意模式</div>
+        <div class="subsection-content">{{ business_model.model }}</div>
+        {% if business_model.model_points %}
+        <div class="sub-label">核心逻辑</div>
+        <ul class="bullet-list">{% for p in business_model.model_points %}<li>{{ p }}</li>{% endfor %}</ul>
+        {% endif %}
+        {% if business_model.cashflow_points %}
+        <div class="sub-label">现金流特征</div>
+        <ul class="bullet-list">{% for p in business_model.cashflow_points %}<li>{{ p }}</li>{% endfor %}</ul>
+        {% endif %}
+        {% if business_model.model_quote %}
+        <div class="quote-box">
+            <div class="quote-text">"{{ business_model.model_quote.text }}"</div>
+            <div class="quote-author">—— {{ business_model.model_quote.author }}</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- 1.2 差异化 -->
+    <div class="subsection">
+        <div class="subsection-title">1.2 差异化</div>
+        <div class="subsection-content">{{ business_model.differentiation }}</div>
+        {% if business_model.diff_table %}
+        <table class="data-table">
+            <thead><tr><th>差异化维度</th><th>说明</th></tr></thead>
+            <tbody>
+            {% for row in business_model.diff_table %}
+                <tr><td style="font-weight:600;width:120px;">{{ row.dimension }}</td><td>{{ row.note }}</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        {% if business_model.diff_highlight %}
+        <div class="highlight-box">{{ business_model.diff_highlight }}</div>
+        {% endif %}
+    </div>
+
+    <!-- 1.3 护城河 -->
+    <div class="subsection">
+        <div class="subsection-title">1.3 护城河</div>
+        {% if business_model.moat_table %}
+        <table class="moat-table">
+            {% for row in business_model.moat_table %}
+            <tr>
+                <td class="moat-type">{{ row.type }}</td>
+                <td class="moat-stars">{{ '⭐' * row.rating }}{{ '☆' * (5 - row.rating) }}</td>
+                <td class="moat-note">{{ row.note }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+        {% if business_model.moat_summary %}
+        <div class="highlight-box">护城河评价：{{ business_model.moat_summary }}</div>
+        {% endif %}
+    </div>
+
+    <!-- 1.4 长长的坡，厚厚的雪 -->
+    <div class="subsection">
+        <div class="subsection-title">1.4 长长的坡，厚厚的雪</div>
+        {% if business_model.runway_space %}
+        <div class="sub-label">行业空间</div>
+        <ul class="bullet-list">{% for p in business_model.runway_space %}<li>{{ p }}</li>{% endfor %}</ul>
+        {% endif %}
+        {% if business_model.runway_snow %}
+        <div class="sub-label">雪够厚吗？</div>
+        <ul class="bullet-list">{% for p in business_model.runway_snow %}<li>{{ p }}</li>{% endfor %}</ul>
+        {% endif %}
+        {% if business_model.runway_summary %}
+        <div class="highlight-box">{{ business_model.runway_summary }}</div>
+        {% endif %}
+    </div>
+
+    <!-- 1.5 资本结构 -->
+    <div class="subsection">
+        <div class="subsection-title">1.5 资本结构</div>
+        {% if business_model.capital_points %}
+        <ul class="bullet-list">{% for p in business_model.capital_points %}<li>{{ p }}</li>{% endfor %}</ul>
+        {% endif %}
+        {% if not business_model.capital_points %}
+        <div class="subsection-content">{{ business_model.capital }}</div>
+        {% endif %}
+    </div>
+
+    <div class="score-line">
+        <span>商业模式评分</span>
+        <span class="stars">{{ '★' * business_model.score }}{{ '☆' * (5 - business_model.score) }} {{ business_model.score }}/5</span>
+    </div>
+
+    {% if business_model.quote %}
+    <div class="quote-box">
+        <div class="quote-text">"{{ business_model.quote.text }}"</div>
+        <div class="quote-author">—— {{ business_model.quote.author }}</div>
+    </div>
+    {% endif %}
+</div>
+
+<hr class="divider">
+
+<!-- ===== 维度二：企业文化（Right People） ===== -->
+<div class="section">
+    <div class="section-header">
+        <div class="section-title-wrap">
+            <div class="section-bar"></div>
+            <div class="section-title">二、企业文化分析（Right People）</div>
+        </div>
+        <div class="section-score">{{ '★' * culture.score }}{{ '☆' * (5 - culture.score) }} {{ culture.score }}/5</div>
+    </div>
+
+    <!-- 2.1 管理层 -->
+    <div class="subsection">
+        <div class="subsection-title">2.1 管理层</div>
+        <div class="subsection-content">{{ culture.management }}</div>
+        {% if culture.management_points %}
+        <ul class="bullet-list">{% for p in culture.management_points %}<li>{{ p }}</li>{% endfor %}</ul>
+        {% endif %}
+        {% if culture.clockmaker %}
+        <div class="highlight-box">造钟人还是报时人？ {{ culture.clockmaker }}</div>
+        {% endif %}
+    </div>
+
+    <!-- 2.2 利润之上的追求 -->
+    <div class="subsection">
+        <div class="subsection-title">2.2 利润之上的追求</div>
+        <div class="subsection-content">{{ culture.purpose }}</div>
+        {% if culture.purpose_points %}
+        <ul class="bullet-list">{% for p in culture.purpose_points %}<li>{{ p }}</li>{% endfor %}</ul>
+        {% endif %}
+        {% if culture.purpose_assessment %}
+        <div class="highlight-box">{{ culture.purpose_assessment }}</div>
+        {% endif %}
+    </div>
+
+    <!-- 2.3 企业文化健康度 -->
+    <div class="subsection">
+        <div class="subsection-title">2.3 企业文化</div>
+        <div class="subsection-content">{{ culture.health }}</div>
+        {% if culture.culture_points %}
+        <ul class="bullet-list">{% for p in culture.culture_points %}<li>{{ p }}</li>{% endfor %}</ul>
+        {% endif %}
+        {% if culture.stop_doing %}
+        <div class="sub-label">Stop Doing List</div>
+        <ul class="bullet-list">{% for p in culture.stop_doing %}<li>{{ p }}</li>{% endfor %}</ul>
+        {% endif %}
+    </div>
+
+    <div class="score-line">
+        <span>企业文化评分</span>
+        <span class="stars">{{ '★' * culture.score }}{{ '☆' * (5 - culture.score) }} {{ culture.score }}/5</span>
+    </div>
+
+    {% if culture.quote %}
+    <div class="quote-box">
+        <div class="quote-text">"{{ culture.quote.text }}"</div>
+        <div class="quote-author">—— {{ culture.quote.author }}</div>
+    </div>
+    {% endif %}
+</div>
+
+<hr class="divider">
+
+<!-- ===== 维度三：估值（Right Price） ===== -->
+<div class="section">
+    <div class="section-header">
+        <div class="section-title-wrap">
+            <div class="section-bar"></div>
+            <div class="section-title">三、估值分析（Right Price）</div>
+        </div>
+        <div class="section-score">{{ '★' * valuation.score }}{{ '☆' * (5 - valuation.score) }} {{ valuation.score }}/5</div>
+    </div>
+
+    <!-- 3.1 未来现金流毛估估 -->
+    <div class="subsection">
+        <div class="subsection-title">3.1 未来现金流毛估估</div>
+        <div class="subsection-content">{{ valuation.future_cashflow }}</div>
+        {% if valuation.assumptions %}
+        <div class="sub-label">假设</div>
+        <ul class="bullet-list">{% for p in valuation.assumptions %}<li>{{ p }}</li>{% endfor %}</ul>
+        {% endif %}
+        {% if valuation.projections %}
+        <div class="sub-label">5-10 年展望</div>
+        <ul class="bullet-list">{% for p in valuation.projections %}<li>{{ p }}</li>{% endfor %}</ul>
+        {% endif %}
+    </div>
+
+    <!-- 3.2 当前估值水平 -->
+    <div class="subsection">
+        <div class="subsection-title">3.2 当前估值水平</div>
+        <div class="subsection-content">{{ valuation.current_valuation }}</div>
+        {% if valuation.valuation_table %}
+        <table class="data-table">
+            <thead><tr><th>指标</th><th>数值</th><th>历史分位</th><th>评价</th></tr></thead>
+            <tbody>
+            {% for row in valuation.valuation_table %}
+                <tr>
+                    <td style="font-weight:600;">{{ row.label }}</td>
+                    <td>{{ row.value }}</td>
+                    <td>{{ row.percentile }}</td>
+                    <td style="color:var(--text-secondary);">{{ row.assessment }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+        {% if valuation.safety_margin %}
+        <div class="highlight-box">安全边际：{{ valuation.safety_margin }}</div>
+        {% endif %}
+    </div>
+
+    <!-- 3.3 十年思维 -->
+    <div class="subsection">
+        <div class="subsection-title">3.3 十年思维</div>
+        <div class="subsection-content">{{ valuation.ten_year }}</div>
+        {% if valuation.scenarios %}
+        <div class="scenarios">
+            {% for s in valuation.scenarios %}
+            <div class="scenario-card {{ s.type }}">
+                <div class="scenario-title">{{ s.title }}</div>
+                <div class="scenario-prob">概率 {{ s.probability }}</div>
+                <ul style="padding-left:16px;margin:0;">
+                {% for p in s.points %}
+                    <li>{{ p }}</li>
+                {% endfor %}
+                </ul>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% if valuation.dare %}
+        <div class="highlight-box">封仓十年敢不敢？ {{ valuation.dare }}</div>
+        {% endif %}
+    </div>
+
+    <div class="score-line">
+        <span>估值评分</span>
+        <span class="stars">{{ '★' * valuation.score }}{{ '☆' * (5 - valuation.score) }} {{ valuation.score }}/5</span>
+    </div>
+
+    {% if valuation.quote %}
+    <div class="quote-box">
+        <div class="quote-text">"{{ valuation.quote.text }}"</div>
+        <div class="quote-author">—— {{ valuation.quote.author }}</div>
+    </div>
+    {% endif %}
+</div>
+
+<hr class="divider">
+
+<!-- ===== 四、风险检查 ===== -->
+<div class="section">
+    <div class="section-header">
+        <div class="section-title-wrap">
+            <div class="section-bar" style="background: var(--accent-orange);"></div>
+            <div class="section-title">四、Stop Doing List 风险检查</div>
+        </div>
+    </div>
+
+    <table class="risk-table">
+        {% for check in risk_checks %}
+        <tr>
+            <td style="width: 30px;">
+                {% if check.status == 'pass' %}
+                <span class="status-dot status-pass">✓</span>
+                {% elif check.status == 'warn' %}
+                <span class="status-dot status-warn">!</span>
+                {% else %}
+                <span class="status-dot status-fail">✗</span>
+                {% endif %}
+            </td>
+            <td class="risk-item" style="width: 160px;">{{ check.item }}</td>
+            <td class="risk-note">{{ check.note }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    {% if policy_risks %}
+    <div class="policy-risks">
+        <div class="policy-risks-title">⚠️ 政策风险（额外关注）</div>
+        <ul>{% for r in policy_risks %}<li>{{ r }}</li>{% endfor %}</ul>
+    </div>
+    {% endif %}
+</div>
+
+<hr class="divider-gold">
+
+<!-- ===== 五、最终结论 ===== -->
+<div class="conclusion-card">
+    <div class="conclusion-header">
+        <div>
+            <span class="recommendation-badge {{ rec_class }}" style="font-size: 11pt; padding: 6px 14px;">{{ recommendation }}</span>
+        </div>
+        <div class="overall-score" style="font-size: 13pt;">
+            综合 {{ '★' * (overall_score | int) }}{{ '☆' * (5 - overall_score | int) }} {{ overall_score }}/5
+        </div>
+    </div>
+
+    <div style="font-weight: 700; font-size: 10.5pt; color: var(--primary); margin-bottom: 6px;">核心理由</div>
+    <ol class="conclusion-reasons">
+        {% for reason in conclusion_reasons %}
+        <li>{{ reason }}</li>
+        {% endfor %}
+    </ol>
+
+    <!-- 段永平视角 -->
+    <div class="duan-view">
+        <div class="duan-view-title">段永平视角</div>
+        <div class="duan-view-content">{{ duan_view if duan_view else duan_buffett_view }}</div>
+    </div>
+
+    <!-- 巴菲特视角 -->
+    {% if buffett_view %}
+    <div class="duan-view" style="margin-top: 10px;">
+        <div class="duan-view-title">巴菲特可能会说</div>
+        <div class="duan-view-content">{{ buffett_view }}</div>
+    </div>
+    {% endif %}
+
+    <!-- 下一步建议 -->
+    {% if next_steps %}
+    <div class="next-steps">
+        <div class="next-steps-title">下一步建议</div>
+        <ol class="bullet-list" style="padding-left:20px;">
+            {% for step in next_steps %}<li>{{ step }}</li>{% endfor %}
+        </ol>
+    </div>
+    {% endif %}
+</div>
+
+<!-- ===== 补充说明 ===== -->
+{% if supplement %}
+<div style="margin-top: 10px; padding: 8px 14px; background: var(--bg-light); border-radius: 6px; font-size: 9pt; color: var(--text-secondary);">
+    {{ supplement }}
+</div>
+{% endif %}
+
+<!-- ===== 底部品牌区 ===== -->
+<div style="margin-top: 20px; padding: 14px 0; border-top: 2px solid var(--accent); text-align: center;">
+    <div style="font-size: 9pt; color: var(--text-light);">价值投资深度分析 · 段永平 & 巴菲特体系 · {{ date }}</div>
+    <div style="font-size: 8pt; color: #bbb; margin-top: 4px;">本报告由 AI 生成，不构成投资建议</div>
+</div>
+
+{% if png_mode %}
+</div>
+</div>
+{% else %}
+</div>
+{% endif %}
+
+</body>
+</html>

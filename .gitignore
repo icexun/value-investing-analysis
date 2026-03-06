@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.Python
+*.so
+
+# 本地生成的分析与报告（样例见 samples/）
+*_template.json
+*_价值分析.pdf
+*_价值分析.png
+reports/
+
+# 系统与 IDE
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
